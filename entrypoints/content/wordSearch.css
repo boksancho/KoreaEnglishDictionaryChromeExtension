@@ -1,0 +1,113 @@
+/* The Modal (background) */
+.luw-modal {
+  display: none; /* Hidden by default */
+  position: fixed; /* Stay in place */
+  z-index: 2147483647; /* Sit on top */
+  /* left: 0;
+  top: 0; */
+  /* width: 100#;
+  height: 100%;  */
+  max-width: 250px;
+  max-height: 350px;
+  overflow: auto; /* Enable scroll if needed */
+  /* Fallback color */
+  background-color: rgb(0, 0, 0);
+  /* Black w/ opacity */
+  /* background-color: rgba(0,0,0,0.4);  */
+  -webkit-animation-name: fadeIn;
+  /* -webkit-animation-duration: 0.2s; */
+  animation-name: fadeIn;
+  /* animation-duration: 0.2s */
+}
+
+/* Modal Content */
+.luw-modal-content {
+  position: fixed;
+  /* bottom: 0; */
+  color: #000000;
+  background-color: #f9faad;
+  width: auto; /* 100%; */
+  /* -webkit-animation-name: slideIn;
+  -webkit-animation-duration: 0.4s;
+  animation-name: slideIn;
+  animation-duration: 0.4s */
+}
+
+/* The Close Button */
+.luw-close {
+  color: white;
+  float: right;
+  font-size: 28px;
+  font-weight: bold;
+}
+
+.luw-close:hover,
+.luw-close:focus {
+  color: #000;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.luw-modal-header {
+  padding: 2px 16px;
+  background-color: #5cb85c;
+  color: white;
+}
+
+.luw-modal-body {padding: 2px 16px;}
+
+.luw-modal-footer {
+  padding: 2px 16px;
+  background-color: #5cb85c;
+  color: white;
+}
+
+/* Add Animation */
+@-webkit-keyframes slideIn {
+  from {bottom: -300px; opacity: 0}
+  to {bottom: 0; opacity: 1}
+}
+
+@keyframes slideIn {
+  from {bottom: -300px; opacity: 0}
+  to {bottom: 0; opacity: 1}
+}
+
+@-webkit-keyframes fadeIn {
+  from {opacity: 0}
+  to {opacity: 1}
+}
+
+@keyframes fadeIn {
+  from {opacity: 0}
+  to {opacity: 1}
+}
+.container {
+  position: fixed;
+  right: 16px;
+  top: 16px;
+  width: 250px;
+  height: 200px;
+  pointer-events: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: white;
+  border-radius: 8px;
+  color: black;
+}
+
+img {
+  width: 24px;
+  height: 24px;
+}
+
+.custom-component {
+  position: absolute;
+  top: 250px; /* Replace with your custom top value */
+  left: 300px; /* Replace with your custom left value */
+  width: 300px; /* Optional: Set the width of the component */
+  background-color: red; /* Optional: Just to see the component easily */
+  color: green;
+}

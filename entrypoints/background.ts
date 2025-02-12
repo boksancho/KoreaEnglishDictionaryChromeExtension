@@ -1,11 +1,15 @@
 import axios from 'axios'
 import { storage } from '@wxt-dev/storage'
 
-export default defineBackground(() => {
+export default defineBackground(async () => {
   console.log('Hello background!', { id: browser.runtime.id });
+  const isActive = await storage.getItem<boolean>("local:isActive")
+  const caption = isActive === true ? 'On' : 'Off'
+  chrome.action.setBadgeText({"text":caption });
+
   /// get translation of english word from Gemini
   async function lookupWordOnGemini(word: string) {
-      const apiKey: string|null = await storage.getItem<string>("local:googleApiKey")
+      const apiKey: string|null = await storage.getItem<string>("local:geminiApiKey")
       const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-8b:generateContent?key=${apiKey}`
       const axiosConfig = {headers: { 'Content-Type': 'application/json'}}
       const systemPromptContent = "I want you to act as a highly proficient Korean translator.  If I provide an English word, give me the direct, simple Korean equivalent(s) in comma delimiter format without using example sentences. Just a list of the Korean word(s) is sufficient. If I provide sentences, please translate to Korean."
@@ -79,5 +83,9 @@ export default defineBackground(() => {
     return true; // Important: Indicate asynchronous response
   });
 
-
+  const unwatch = storage.watch<boolean>('local:isActive', (newValue, oldValue) => {
+    console.log('Count changed:', { newValue, oldValue });
+    const caption = newValue === true ? 'On' : 'Off'
+    chrome.action.setBadgeText({"text":caption });
+  });
 });

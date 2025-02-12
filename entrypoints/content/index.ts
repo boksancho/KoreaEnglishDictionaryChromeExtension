@@ -3,7 +3,6 @@ import { storage } from '@wxt-dev/storage'
 import { ContentScriptContext, ShadowRootContentScriptUi } from "wxt/client"
 import modalApp from "./App.vue"
 // import "./reset.css";
-// import "./wordSearch.css";
 
 let thisContainer:any|undefined 
 let overlayUi: ShadowRootContentScriptUi

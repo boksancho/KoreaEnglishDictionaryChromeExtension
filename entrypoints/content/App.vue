@@ -2,6 +2,7 @@
 import vueLogo from "~/assets/vue.svg"
 import bxLogo from "~/assets/bx.svg"
 import bxLogo2 from "~/assets/4-1024.webp"
+import { onMounted } from 'vue'
 
 const props = defineProps({
   wordToLookup: {
@@ -21,6 +22,10 @@ function clicked () {
   console.log("🚀 ~ clicked ~ clicked:")
   
 }
+onMounted(() =>{
+  console.log("🚀 ~ onMounted ~ props.wordToLookup:", props.wordToLookup)
+  console.log("🚀 ~ onMounted ~ props.wordDefinition:", props.wordDefinition)
+})
 </script>
 
 <template>

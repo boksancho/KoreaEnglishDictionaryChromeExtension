@@ -13,13 +13,12 @@ import SettingsUi from '@/components/SettingsUi.vue';
       <img src="@/assets/vue.svg" class="logo vue" alt="Vue logo" />
     </a>
   </div> -->
-  <img src="@/assets/logo1.png" class="logo" alt="My logo" />
   <SettingsUi msg="settings" />
 </template>
 
 <style scoped>
 .logo {
-  height: 10em;
+  height: 5em;
   padding: 1.5em;
   will-change: filter;
   transition: filter 300ms;

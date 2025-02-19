@@ -19,12 +19,12 @@ const props = defineProps({
   }
 })
 function clicked () {
-  console.log("🚀 ~ clicked ~ clicked:")
+  // console.log("🚀 ~ clicked ~ clicked:")
   
 }
 onMounted(() =>{
-  console.log("🚀 ~ onMounted ~ props.wordToLookup:", props.wordToLookup)
-  console.log("🚀 ~ onMounted ~ props.wordDefinition:", props.wordDefinition)
+  // console.log("🚀 ~ onMounted ~ props.wordToLookup:", props.wordToLookup)
+  // console.log("🚀 ~ onMounted ~ props.wordDefinition:", props.wordDefinition)
 })
 </script>
 

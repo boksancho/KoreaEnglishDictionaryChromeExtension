@@ -103,7 +103,7 @@ async function defineOverlay(ctx: ContentScriptContext) {
       // shadowHost.style.paddingLeft = "15px"
       // shadowHost.style.paddingRight = "15px"
       
-      container.style.position = "absolute"
+      container.style.position = "fixed"
       // container.style.paddingLeft = "5px"
       // container.style.paddingRight = "5px"
 

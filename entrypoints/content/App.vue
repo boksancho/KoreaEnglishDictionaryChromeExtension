@@ -42,26 +42,5 @@ onMounted(() =>{
 </template>
 
 <style scoped>
-/* .word-search-result-container {
-  position: fixed;
-  right: 16px;
-  top: 16px;
-  width: 250px;
-  height: 200px;
-  pointer-events: auto;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  background: white;
-  border-radius: 8px;
-  color: black;
-}
 
-img {
-  width: 24px;
-  height: 24px;
-}
-
- */
 </style>

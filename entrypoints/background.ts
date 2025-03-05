@@ -3,9 +3,24 @@ import { storage } from '@wxt-dev/storage'
 
 export default defineBackground(async () => {
   // console.log('Hello background!', { id: browser.runtime.id });
-  const isActive = await storage.getItem<boolean>("local:isActive")
-  const caption = isActive === true ? 'On' : 'Off'
-  chrome.action.setBadgeText({"text":caption });
+  async function updateBadgeFromStorage() {
+    const isActive = await storage.getItem<boolean>("local:isActive")
+    const caption = isActive === true ? 'On' : 'Off'
+    chrome.action.setBadgeText({"text": caption });
+  }
+  
+  // Update badge when background script initializes
+  await updateBadgeFromStorage();
+
+  // Handle browser startup
+  chrome.runtime.onStartup.addListener(async () => {
+    await updateBadgeFromStorage();
+  });
+  
+  // Handle extension installation or update
+  chrome.runtime.onInstalled.addListener(async () => {
+    await updateBadgeFromStorage();
+  });
 
   function sendTranslationToContentScript (tabId: number, data: string|null) {
     if (data) {

@@ -22,9 +22,9 @@ export default defineBackground(async () => {
     await updateBadgeFromStorage();
   });
 
-  function sendTranslationToContentScript (tabId: number, data: string|null) {
+  function sendTranslationToContentScript (tabId: number, source: string, data: string|null) {
     if (data) {
-      chrome.tabs.sendMessage(tabId, { message: "wordLookup", data: data }, (response) => {
+      chrome.tabs.sendMessage(tabId, { message: "wordLookup", source: source, data: data }, (response) => {
         if (chrome.runtime.lastError) {
           console.error("Error sending message:", chrome.runtime.lastError); // Tab might be closed
         } else {
@@ -35,10 +35,11 @@ export default defineBackground(async () => {
     }
 
   }
+  
   /// get translation of english word from Gemini
   async function lookupWordOnGemini(word: string) {
       const apiKey: string|null = await storage.getItem<string>("local:geminiApiKey")
-      const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-8b:generateContent?key=${apiKey}`
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`
       const axiosConfig = {headers: { 'Content-Type': 'application/json'}}
       // const systemPromptContent = "I want you to act as a highly proficient Korean translator.  If I provide an English word, give me the direct, simple Korean equivalent(s) in comma delimiter format without using example sentences. Just a list of the Korean word(s) is sufficient. If I provide sentences, please translate to Korean."
       const systemPromptContent = "I want you to act as a highly proficient Korean translator. Please translate to Korean."
@@ -57,6 +58,23 @@ export default defineBackground(async () => {
       let foundWord = response.data.candidates[0].content.parts[0].text
 
       return foundWord
+  }
+  
+  async function lookupWordOnAzureAi(word: string) {
+    // todo: use keyVault
+    const resourceKey = ''
+    const region = 'eastus'
+    const url = 'https://api.cognitive.microsofttranslator.com/translate?api-version=3.0&from=en&to=ko'
+    const azureAiConfigData = [{text: word }]
+    const axiosConfig = {
+      headers: {
+          "Ocp-Apim-Subscription-Key": resourceKey,
+          "Ocp-Apim-Subscription-Region": region,
+          "Content-Type": "application/json",
+      },
+    }
+    const response = await axios.post(url, azureAiConfigData, axiosConfig)
+    return response.data[0].translations.map((item: { text: any }) => item.text).toString()
   }
   
   async function lookupWordOnNaver (wordToLookup: string) {
@@ -81,7 +99,7 @@ export default defineBackground(async () => {
     if (request.action === 'wordLookup' && wordCount(request.wordToLookup) < 3) {
       try {
         let data:string|null = await lookupWordOnNaver(request.wordToLookup)
-        sendTranslationToContentScript(tabId, data)
+        sendTranslationToContentScript(tabId, 'naver', data)
       } catch (error: any) {
         console.log('Error fetching from API in background script:', JSON.stringify(error));
         sendResponse({ error: error.message }); // Send an error back
@@ -98,7 +116,13 @@ export default defineBackground(async () => {
 
   chrome.contextMenus.create({
     id: "bxTranslateByGemini", // Unique ID for the item
-    title: "Translate to Korean", // Text displayed in the menu
+    title: "Translate to Korean (by Gemini)", // Text displayed in the menu
+    contexts: ["page", "selection", "link", "image"], // Contexts where the menu item appears
+
+  })
+  chrome.contextMenus.create({
+    id: "bxTranslateByAzureAi", // Unique ID for the item
+    title: "Translate to Korean (by Azure)", // Text displayed in the menu
     contexts: ["page", "selection", "link", "image"], // Contexts where the menu item appears
 
   })
@@ -107,9 +131,19 @@ export default defineBackground(async () => {
     if (info.menuItemId !== 'bxTranslateByGemini') { 
       return
     }
-    await lookupWordOnGemini(info?.selectionText ?? '')
+    // await lookupWordOnGemini(info?.selectionText ?? '')
     const tabId: number = tab?.id ?? 0
     let data: string|null = await lookupWordOnGemini(info?.selectionText ?? '')
-    sendTranslationToContentScript(tabId, data)
+    sendTranslationToContentScript(tabId, 'gemini', data)
+  })
+
+  chrome.contextMenus.onClicked.addListener(async (info, tab) => {
+    if (info.menuItemId !== 'bxTranslateByAzureAi') { 
+      return
+    }
+    // await lookupWordOnAzureAi(info?.selectionText ?? '')
+    const tabId: number = tab?.id ?? 0
+    let data: string|null = await lookupWordOnAzureAi(info?.selectionText ?? '')
+    sendTranslationToContentScript(tabId, 'azure', data)
   })
 })

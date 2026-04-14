@@ -158,5 +158,6 @@ export default defineContentScript({
     chrome.runtime.onMessage.addListener(handleWordLookup)
     document.addEventListener("click", () => { closeModal()})
     window.onkeydown = (evt: KeyboardEvent) => { closeModalOnEscape(evt) }
+    window.addEventListener('scroll', closeModal, true)
   },
 });

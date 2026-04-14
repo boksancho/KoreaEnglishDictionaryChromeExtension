@@ -39,7 +39,7 @@ export default defineBackground(async () => {
   /// get translation of english word from Gemini
   async function lookupWordOnGemini(word: string) {
       const apiKey: string|null = await storage.getItem<string>("local:geminiApiKey")
-      const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`
+      const url = `https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash-lite:generateContent?key=${apiKey}`
       const axiosConfig = {headers: { 'Content-Type': 'application/json'}}
       // const systemPromptContent = "I want you to act as a highly proficient Korean translator.  If I provide an English word, give me the direct, simple Korean equivalent(s) in comma delimiter format without using example sentences. Just a list of the Korean word(s) is sufficient. If I provide sentences, please translate to Korean."
       const systemPromptContent = "I want you to act as a highly proficient Korean translator. Please translate to Korean."
@@ -61,8 +61,7 @@ export default defineBackground(async () => {
   }
   
   async function lookupWordOnAzureAi(word: string) {
-    // todo: use keyVault
-    const resourceKey = ''
+    const resourceKey: string|null = await storage.getItem<string>("local:azureAiKey")
     const region = 'eastus'
     const url = 'https://api.cognitive.microsofttranslator.com/translate?api-version=3.0&from=en&to=ko'
     const azureAiConfigData = [{text: word }]

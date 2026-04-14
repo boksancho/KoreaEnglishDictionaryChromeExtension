@@ -10,6 +10,7 @@ defineProps({
 const count = ref(0);
 const checked = ref<boolean>(false);
 const geminiApiKey = ref<string>('');
+const azureAiKey = ref<string>('');
 watch(checked, async (newValue, oldValue) => {
   await storage.setItem<boolean>("local:isActive", checked.value);
 })
@@ -21,10 +22,13 @@ onMounted(async () => {
   const caption = checked.value === true ? 'On' : 'Off'
   chrome.action.setBadgeText({"text":caption });
 
+  geminiApiKey.value = (await storage.getItem<string>("local:geminiApiKey")) || ''
+  azureAiKey.value = (await storage.getItem<string>("local:azureAiKey")) || ''
 })
 
 async function onSubmit () {
   await storage.setItem<string>("local:geminiApiKey", geminiApiKey.value)
+  await storage.setItem<string>("local:azureAiKey", azureAiKey.value)
 }
 
 
@@ -40,12 +44,16 @@ async function onSubmit () {
     <BFormCheckbox v-model="checked" name="check-button" switch size="lg">
       Enable
     </BFormCheckbox>
-    <BForm @submit="onSubmit">
-      <!-- <label for="geminiApiKey">Enter your gemini api key</label> -->
-      <BFormGroup>
-        <BFormInput id="geminiApiKey" v-model="geminiApiKey" placeholder="Enter your gemini api key"></BFormInput>
-        <BButton class="mt-1" type="submit" variant="primary">Submit</BButton>
+    <BForm @submit.prevent="onSubmit">
+      <BFormGroup class="mt-3">
+        <label for="geminiApiKey">Gemini API Key</label>
+        <BFormInput id="geminiApiKey" v-model="geminiApiKey" type="password" placeholder="Enter Gemini API key"></BFormInput>
       </BFormGroup>
+      <BFormGroup class="mt-2">
+        <label for="azureAiKey">Azure AI Key</label>
+        <BFormInput id="azureAiKey" v-model="azureAiKey" type="password" placeholder="Enter Azure AI key"></BFormInput>
+      </BFormGroup>
+      <BButton class="mt-3" type="submit" variant="primary">Save Keys</BButton>
     </BForm>
   </div>
   <!-- <h2>{{ msg }}</h2> 

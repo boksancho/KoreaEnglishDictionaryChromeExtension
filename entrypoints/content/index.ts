@@ -10,6 +10,7 @@ let appInstance: any = null;
 
 type WordDefinition = {
   wordToLookup: string;
+  source: string;
   url: string;
   wordDefinition: string;
 };
@@ -60,8 +61,9 @@ function handleWordLookup (request: any, sender: any, sendResponse: any) {
     try {
       let wordToLookup = window.getSelection()?.toString() ?? ''
       const workCount = wordCount(wordToLookup)
-      const wordObject: WordDefinition ={
+      const wordObject: WordDefinition = {
         wordToLookup: workCount > 2 ? '' : wordToLookup,
+        source: request.source,
         url: "",
         wordDefinition: request.data,
       }
@@ -118,7 +120,13 @@ async function defineOverlay(ctx: ContentScriptContext) {
   overlay.updateData = (wordDefinition: WordDefinition) => {
     if (appInstance) {
       appInstance.unmount();
-      appInstance = createApp(modalApp, {wordToLookup:wordDefinition.wordToLookup, wordDefinition: wordDefinition.wordDefinition, url:wordDefinition.url});
+      const rootProps = {
+        wordToLookup: wordDefinition.wordToLookup, 
+        wordDefinition: wordDefinition.wordDefinition,
+        source: wordDefinition.source,
+        url:wordDefinition.url
+      }
+      appInstance = createApp(modalApp, rootProps);
       appInstance.mount(thisContainer);
       // appInstance.mount(overlay.uiContainer);
       // appInstance.mount();

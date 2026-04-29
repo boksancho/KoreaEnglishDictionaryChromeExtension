@@ -38,7 +38,13 @@ async function searchWord(word: string) {
   if (!wordToLookup) { return }
 
   try {
-    chrome.runtime.sendMessage({ action: 'wordLookup', wordToLookup: wordToLookup})
+    chrome.runtime.sendMessage({ action: 'wordLookup', wordToLookup: wordToLookup}, (response) => {
+      if (chrome.runtime.lastError) {
+        console.error('[KoDict] sendMessage error:', chrome.runtime.lastError);
+      } else {
+        console.debug('[KoDict] background ack:', response);
+      }
+    });
   } catch (error) {
     console.error('Error fetching data:', error)
   }

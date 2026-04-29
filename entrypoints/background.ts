@@ -39,7 +39,7 @@ export default defineBackground(async () => {
   /// get translation of english word from Gemini
   async function lookupWordOnGemini(word: string) {
       const apiKey: string|null = await storage.getItem<string>("local:geminiApiKey")
-      const url = `https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash-lite:generateContent?key=${apiKey}`
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent?key=${apiKey}`
       const axiosConfig = {headers: { 'Content-Type': 'application/json'}}
       // const systemPromptContent = "I want you to act as a highly proficient Korean translator.  If I provide an English word, give me the direct, simple Korean equivalent(s) in comma delimiter format without using example sentences. Just a list of the Korean word(s) is sufficient. If I provide sentences, please translate to Korean."
       const systemPromptContent = "I want you to act as a highly proficient Korean translator. Please translate to Korean."
@@ -81,7 +81,6 @@ export default defineBackground(async () => {
     const rltNumber = 10 //Math.max(10, request.wordToLookup.length)
     const url = `http://ac-dict.naver.com/enko/ac?st=${stNumber}&r_lt=${rltNumber}&q=${wordToLookup}`
     const response = await axios.get(url)
-    //   // const data = await response.json(); // Or response.text() if not JSON
     const foundWordDefinitionObject = response.data
     const foundWordDefinition = foundWordDefinitionObject.items[0][0][2][0]
 
@@ -100,7 +99,7 @@ export default defineBackground(async () => {
         let data:string|null = await lookupWordOnNaver(request.wordToLookup)
         sendTranslationToContentScript(tabId, 'naver', data)
       } catch (error: any) {
-        console.log('Error fetching from API in background script:', JSON.stringify(error));
+        console.error('[KoDict BG] Naver lookup failed:', error.message, 'response:', JSON.stringify(error.response?.data));
         sendResponse({ error: error.message }); // Send an error back
       }
     }
@@ -117,8 +116,8 @@ export default defineBackground(async () => {
     id: "bxTranslateByGemini", // Unique ID for the item
     title: "Translate to Korean (by Gemini)", // Text displayed in the menu
     contexts: ["page", "selection", "link", "image"], // Contexts where the menu item appears
-
   })
+
   chrome.contextMenus.create({
     id: "bxTranslateByAzureAi", // Unique ID for the item
     title: "Translate to Korean (by Azure)", // Text displayed in the menu
@@ -127,22 +126,23 @@ export default defineBackground(async () => {
   })
 
   chrome.contextMenus.onClicked.addListener(async (info, tab) => {
-    if (info.menuItemId !== 'bxTranslateByGemini') { 
-      return
+    if (info.menuItemId === 'bxTranslateByGemini') {
+      try {
+        const tabId: number = tab?.id ?? 0
+        const data: string|null = await lookupWordOnGemini(info?.selectionText ?? '')
+        sendTranslationToContentScript(tabId, 'gemini', data)
+      } catch (error: any) {
+        console.error('[KoDict BG] Error in Gemini translation:', error.message, 'response:', JSON.stringify(error.response?.data))
+      }
+    } else if (info.menuItemId === 'bxTranslateByAzureAi') {
+      console.debug('[KoDict BG] context menu Azure, selectionText:', JSON.stringify(info?.selectionText));
+      try {
+        const tabId: number = tab?.id ?? 0
+        const data: string|null = await lookupWordOnAzureAi(info?.selectionText ?? '')
+        sendTranslationToContentScript(tabId, 'azure', data)
+      } catch (error: any) {
+        console.error('[KoDict BG] Error in Azure translation:', error.message, 'response:', JSON.stringify(error.response?.data))
+      }
     }
-    // await lookupWordOnGemini(info?.selectionText ?? '')
-    const tabId: number = tab?.id ?? 0
-    let data: string|null = await lookupWordOnGemini(info?.selectionText ?? '')
-    sendTranslationToContentScript(tabId, 'gemini', data)
-  })
-
-  chrome.contextMenus.onClicked.addListener(async (info, tab) => {
-    if (info.menuItemId !== 'bxTranslateByAzureAi') { 
-      return
-    }
-    // await lookupWordOnAzureAi(info?.selectionText ?? '')
-    const tabId: number = tab?.id ?? 0
-    let data: string|null = await lookupWordOnAzureAi(info?.selectionText ?? '')
-    sendTranslationToContentScript(tabId, 'azure', data)
   })
 })

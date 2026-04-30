@@ -2,7 +2,6 @@ import axios from 'axios'
 import { storage } from '@wxt-dev/storage'
 
 export default defineBackground(async () => {
-  // console.log('Hello background!', { id: browser.runtime.id });
   async function updateBadgeFromStorage() {
     const isActive = await storage.getItem<boolean>("local:isActive")
     const caption = isActive === true ? 'On' : 'Off'
@@ -24,14 +23,7 @@ export default defineBackground(async () => {
 
   function sendTranslationToContentScript (tabId: number, source: string, data: string|null) {
     if (data) {
-      chrome.tabs.sendMessage(tabId, { message: "wordLookup", source: source, data: data }, (response) => {
-        if (chrome.runtime.lastError) {
-          console.error("Error sending message:", chrome.runtime.lastError); // Tab might be closed
-        } else {
-          console.log("Response from content script:", response); // If the content script sends a reply
-        }
-      })
-      // sendResponse({response: data}); // notworking???
+      chrome.tabs.sendMessage(tabId, { message: "wordLookup", source: source, data: data })
     }
 
   }
@@ -41,7 +33,6 @@ export default defineBackground(async () => {
       const apiKey: string|null = await storage.getItem<string>("local:geminiApiKey")
       const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent?key=${apiKey}`
       const axiosConfig = {headers: { 'Content-Type': 'application/json'}}
-      // const systemPromptContent = "I want you to act as a highly proficient Korean translator.  If I provide an English word, give me the direct, simple Korean equivalent(s) in comma delimiter format without using example sentences. Just a list of the Korean word(s) is sufficient. If I provide sentences, please translate to Korean."
       const systemPromptContent = "I want you to act as a highly proficient Korean translator. Please translate to Korean."
       const geminiConfigData = {
         systemInstruction: { role: "user", parts: [{ text: systemPromptContent }] },
@@ -99,15 +90,13 @@ export default defineBackground(async () => {
         let data:string|null = await lookupWordOnNaver(request.wordToLookup)
         sendTranslationToContentScript(tabId, 'naver', data)
       } catch (error: any) {
-        console.error('[KoDict BG] Naver lookup failed:', error.message, 'response:', JSON.stringify(error.response?.data));
-        sendResponse({ error: error.message }); // Send an error back
+        sendResponse({ error: error.message });
       }
     }
     return true; // Important: Indicate asynchronous response
   })
 
   const unwatch = storage.watch<boolean>('local:isActive', (newValue, oldValue) => {
-    // console.log('Count changed:', { newValue, oldValue });
     const caption = newValue === true ? 'On' : 'Off'
     chrome.action.setBadgeText({"text":caption });
   })
@@ -132,16 +121,15 @@ export default defineBackground(async () => {
         const data: string|null = await lookupWordOnGemini(info?.selectionText ?? '')
         sendTranslationToContentScript(tabId, 'gemini', data)
       } catch (error: any) {
-        console.error('[KoDict BG] Error in Gemini translation:', error.message, 'response:', JSON.stringify(error.response?.data))
+        // translation failed
       }
     } else if (info.menuItemId === 'bxTranslateByAzureAi') {
-      console.debug('[KoDict BG] context menu Azure, selectionText:', JSON.stringify(info?.selectionText));
       try {
         const tabId: number = tab?.id ?? 0
         const data: string|null = await lookupWordOnAzureAi(info?.selectionText ?? '')
         sendTranslationToContentScript(tabId, 'azure', data)
       } catch (error: any) {
-        console.error('[KoDict BG] Error in Azure translation:', error.message, 'response:', JSON.stringify(error.response?.data))
+        // translation failed
       }
     }
   })

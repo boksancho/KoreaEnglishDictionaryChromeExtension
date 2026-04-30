@@ -2,7 +2,6 @@ import { createApp } from "vue"
 import { storage } from '@wxt-dev/storage'
 import { ContentScriptContext, ShadowRootContentScriptUi } from "wxt/client"
 import modalApp from "./App.vue"
-// import "./reset.css";
 
 let thisContainer:any|undefined 
 let overlayUi: ShadowRootContentScriptUi
@@ -22,7 +21,6 @@ interface MyShadowRootContentScriptUi extends ShadowRootContentScriptUi<any> {
 }
 
 async function handleSelection() {
-  // overlayUi.mount()
   const isActive: boolean|null = await storage.getItem<boolean>("local:isActive");
   if (!isActive) {
     return
@@ -38,15 +36,9 @@ async function searchWord(word: string) {
   if (!wordToLookup) { return }
 
   try {
-    chrome.runtime.sendMessage({ action: 'wordLookup', wordToLookup: wordToLookup}, (response) => {
-      if (chrome.runtime.lastError) {
-        console.error('[KoDict] sendMessage error:', chrome.runtime.lastError);
-      } else {
-        console.debug('[KoDict] background ack:', response);
-      }
-    });
+    chrome.runtime.sendMessage({ action: 'wordLookup', wordToLookup: wordToLookup });
   } catch (error) {
-    console.error('Error fetching data:', error)
+    // send failed
   }
 }
 
@@ -76,17 +68,12 @@ function handleWordLookup (request: any, sender: any, sendResponse: any) {
       overlayUi.mount()
       overlayUi.updateData(wordObject)
     } catch (err) {
-      console.log("handleWordLookup ~ err:", err)
       // do nothing
     } finally {
       // Optionally send a response back to the background script
       sendResponse({ response: "Message received successfully! (from content script)" });
     }
   }
-
-  // Important: Return true for asynchronous responses
-  // (If you need to call sendResponse later)
-  // return true; // Only if you need asynchronous response
 }
 
 async function defineOverlay(ctx: ContentScriptContext) {
